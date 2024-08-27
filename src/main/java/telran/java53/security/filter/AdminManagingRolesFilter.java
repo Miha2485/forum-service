@@ -20,13 +20,12 @@ import telran.java53.accounting.model.Role;
 import telran.java53.accounting.model.UserAccount;
 
 @Component
-@RequiredArgsConstructor
 @Order(20)
 public class AdminManagingRolesFilter implements Filter {
 
     private static final Role REQUIRED_ROLE = Role.ADMINISTRATOR;
   
-    private final UserAccountRepository userAccountRepository;
+    private final UserAccountRepository userAccountRepository = null;
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)

@@ -2,6 +2,7 @@ package telran.java53.accounting.service;
 
 import org.mindrot.jbcrypt.BCrypt;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -16,10 +17,12 @@ import telran.java53.accounting.model.UserAccount;
 
 @Service
 @RequiredArgsConstructor
-public class UserAccountServiceImpl implements UserAccountService {
-	
+public class UserAccountServiceImpl implements UserAccountService, CommandLineRunner {
+
+
 	final UserAccountRepository userAccountRepository;
 	final ModelMapper modelMapper;
+
 
 	@Override
 	public UserDto register(UserRegisterDto userRegisterDto) {
@@ -33,11 +36,13 @@ public class UserAccountServiceImpl implements UserAccountService {
 		return modelMapper.map(userAccount, UserDto.class);
 	}
 
+
 	@Override
 	public UserDto getUser(String login) {
 		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
 		return modelMapper.map(userAccount, UserDto.class);
 	}
+
 
 	@Override
 	public UserDto removeUser(String login) {
@@ -45,6 +50,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		userAccountRepository.delete(userAccount);
 		return modelMapper.map(userAccount, UserDto.class);
 	}
+
 
 	@Override
 	public UserDto updateUser(String login, UserEditDto userEditDto) {
@@ -59,6 +65,7 @@ public class UserAccountServiceImpl implements UserAccountService {
 		return modelMapper.map(userAccount, UserDto.class);
 	}
 
+
 	@Override
 	public RolesDto changeRolesList(String login, String role, boolean isAddRole) {
 		UserAccount userAccount = userAccountRepository.findById(login).orElseThrow(UserNotFoundException::new);
@@ -68,11 +75,12 @@ public class UserAccountServiceImpl implements UserAccountService {
 		} else {
 			res = userAccount.removeRole(role);
 		}
-		if(res) {
+		if (res) {
 			userAccountRepository.save(userAccount);
 		}
 		return modelMapper.map(userAccount, RolesDto.class);
 	}
+
 
 	@Override
 	public void changePassword(String login, String newPassword) {
@@ -80,7 +88,22 @@ public class UserAccountServiceImpl implements UserAccountService {
 		String password = BCrypt.hashpw(newPassword, BCrypt.gensalt());
 		userAccount.setPassword(password);
 		userAccountRepository.save(userAccount);
+	}
+
+
+	@Override
+	public void run(String... args) throws Exception {
+		if (!userAccountRepository.existsById("admin")) {
+			String password = BCrypt.hashpw("admin", BCrypt.gensalt());
+			UserAccount userAccount = new UserAccount("admin", password, "", "");
+			userAccount.addRole("MODERATOR");
+			userAccount.addRole("ADMINISTRATOR");
+			userAccountRepository.save(userAccount);
+		}
+
 
 	}
 
+
 }
+
